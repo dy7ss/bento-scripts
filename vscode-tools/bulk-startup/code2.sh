@@ -1,0 +1,1 @@
+code2() { for N in "$@"; do code "$N"; done; }
