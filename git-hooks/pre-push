@@ -1,0 +1,15 @@
+#!/bin/sh
+
+readonly PROTECTED_BRANCHES="(master|main|develop)"
+
+while read -r remote_ref
+do
+    BRANCH_NAME=$(echo "$remote_ref" | sed 's;^refs/heads/;;')
+    echo "BRANCH_NAME=${BRANCH_NAME}, remote_ref=${remote_ref}"
+    if echo "$BRANCH_NAME" | grep -Eq "$PROTECTED_BRANCHES"; then
+        echo "Error: pushing to '$BRANCH_NAME'  branch is not allowed."
+        exit 1
+    fi
+done
+
+exit 0
