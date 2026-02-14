@@ -47,7 +47,9 @@ function formatJSON() {
 
     try {
         // JSONをパースして整形
-        const parsed = JSON.parse(input);
+        // エスケープされたダブルクォーテーションを除去してパース
+        // 例: {\"name\":\"Alice\"} → {"name":"Alice"}
+        const parsed = JSON.parse(unescapeJSON(input));
         const formatted = JSON.stringify(parsed, null, 2);
 
         jsonOutput.value = formatted;
@@ -56,6 +58,24 @@ function formatJSON() {
         showMessage('エラー: 無効なJSONです - ' + error.message, 'error');
         jsonOutput.value = '';
     }
+}
+
+/**
+ * エスケープされたJSONをアンエスケープする関数
+ * 例: {\"name\":\"Alice\"} → {"name":"Alice"}
+ * @param {string} jsonString - アンエスケープするJSON文字列
+ * @returns {string} - アンエスケープされたJSON文字列
+ */
+function unescapeJSON(jsonString) {
+    // 先頭と末尾がダブルクォーテーションで囲まれている場合は除去
+    if (jsonString.startsWith('"') && jsonString.endsWith('"')) {
+        jsonString = jsonString.slice(1, -1);
+    }
+
+    // エスケープされたダブルクォーテーションを通常のダブルクォーテーションに変換
+    jsonString = jsonString.replace(/\\"/g, '"');
+
+    return jsonString;
 }
 
 /**
