@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON フォーマッター</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>JSON フォーマッター</h1>
+        <p class="subtitle">改行されていないJSONを整形します</p>
+        
+        <div class="content">
+            <div class="input-section">
+                <label for="jsonInput">入力 (JSON):</label>
+                <textarea 
+                    id="jsonInput" 
+                    class="textarea" 
+                    placeholder='{"key":"value","nested":{"data":123}}'
+                    spellcheck="false">
+                </textarea>
+                <div class="button-group">
+                    <button id="formatBtn" class="btn btn-primary">フォーマット</button>
+                    <button id="clearInputBtn" class="btn btn-secondary">クリア</button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <label for="jsonOutput">出力 (フォーマッティング済み):</label>
+                <textarea 
+                    id="jsonOutput" 
+                    class="textarea" 
+                    placeholder="フォーマット結果がここに表示されます"
+                    readonly
+                    spellcheck="false">
+                </textarea>
+                <div class="button-group">
+                    <button id="copyBtn" class="btn btn-primary">コピー</button>
+                    <button id="clearOutputBtn" class="btn btn-secondary">クリア</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
