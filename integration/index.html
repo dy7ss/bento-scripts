@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON フォーマッター</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .input-section,
+        .output-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .textarea {
+            flex: 1;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            color: #333;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .textarea::placeholder {
+            color: #bbb;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+            border-color: #bbb;
+        }
+
+        .btn-secondary:active {
+            background: #f0f0f0;
+        }
+
+        .message {
+            text-align: center;
+            height: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+
+        .message.success {
+            color: #4caf50;
+        }
+
+        .message.error {
+            color: #f44336;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .textarea {
+                min-height: 200px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JSON フォーマッター</h1>
+        <p class="subtitle">改行されていないJSONを整形します</p>
+        
+        <div class="content">
+            <div class="input-section">
+                <label for="jsonInput">入力 (JSON):</label>
+                <textarea 
+                    id="jsonInput" 
+                    class="textarea" 
+                    placeholder='{"key":"value","nested":{"data":123}}'
+                    spellcheck="false">
+                </textarea>
+                <div class="button-group">
+                    <button id="formatBtn" class="btn btn-primary">フォーマット</button>
+                    <button id="clearInputBtn" class="btn btn-secondary">クリア</button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <label for="jsonOutput">出力 (フォーマッティング済み):</label>
+                <textarea 
+                    id="jsonOutput" 
+                    class="textarea" 
+                    placeholder="フォーマット結果がここに表示されます"
+                    readonly
+                    spellcheck="false">
+                </textarea>
+                <div class="button-group">
+                    <button id="copyBtn" class="btn btn-primary">コピー</button>
+                    <button id="clearOutputBtn" class="btn btn-secondary">クリア</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        // DOM要素の取得
+        const jsonInput = document.getElementById('jsonInput');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const formatBtn = document.getElementById('formatBtn');
+        const clearInputBtn = document.getElementById('clearInputBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const clearOutputBtn = document.getElementById('clearOutputBtn');
+        const messageEl = document.getElementById('message');
+
+        // フォーマットボタンのクリックイベント
+        formatBtn.addEventListener('click', formatJSON);
+
+        // Enterキー（Ctrl+Enter）でフォーマット実行
+        jsonInput.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                formatJSON();
+            }
+        });
+
+        // クリアボタンのクリックイベント
+        clearInputBtn.addEventListener('click', () => {
+            jsonInput.value = '';
+            jsonInput.focus();
+            showMessage('', '');
+        });
+
+        clearOutputBtn.addEventListener('click', () => {
+            jsonOutput.value = '';
+            showMessage('', '');
+        });
+
+        // コピーボタンのクリックイベント
+        copyBtn.addEventListener('click', copyToClipboard);
+
+        /**
+         * JSONをフォーマットする関数
+         */
+        function formatJSON() {
+            const input = jsonInput.value.trim();
+
+            // 入力が空の場合
+            if (!input) {
+                showMessage('JSONを入力してください', 'error');
+                jsonOutput.value = '';
+                return;
+            }
+
+            try {
+                // JSONをパースして整形
+                // エスケープされたダブルクォーテーションを除去してパース
+                // 例: {\"name\":\"Alice\"} → {"name":"Alice"}
+                const parsed = JSON.parse(unescapeJSON(input));
+                const formatted = JSON.stringify(parsed, null, 2);
+
+                jsonOutput.value = formatted;
+                showMessage('フォーマット完了！', 'success');
+            } catch (error) {
+                showMessage('エラー: 無効なJSONです - ' + error.message, 'error');
+                jsonOutput.value = '';
+            }
+        }
+
+        /**
+         * エスケープされたJSONをアンエスケープする関数
+         * 例: {\"name\":\"Alice\"} → {"name":"Alice"}
+         * @param {string} jsonString - アンエスケープするJSON文字列
+         * @returns {string} - アンエスケープされたJSON文字列
+         */
+        function unescapeJSON(jsonString) {
+            // 先頭と末尾がダブルクォーテーションで囲まれている場合は除去
+            if (jsonString.startsWith('"') && jsonString.endsWith('"')) {
+                jsonString = jsonString.slice(1, -1);
+            }
+
+            // エスケープされたダブルクォーテーションを通常のダブルクォーテーションに変換
+            jsonString = jsonString.replace(/\\"/g, '"');
+
+            return jsonString;
+        }
+
+        /**
+         * メッセージを表示する関数
+         * @param {string} text - 表示するメッセージテキスト
+         * @param {string} type - メッセージタイプ ('success' または 'error')
+         */
+        function showMessage(text, type) {
+            messageEl.textContent = text;
+            messageEl.className = 'message';
+            if (type) {
+                messageEl.classList.add(type);
+            }
+
+            // 3秒後にメッセージを消す
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageEl.textContent = '';
+                    messageEl.className = 'message';
+                }, 3000);
+            }
+        }
+
+        /**
+         * クリップボードにコピーする関数
+         */
+        function copyToClipboard() {
+            const output = jsonOutput.value.trim();
+
+            if (!output) {
+                showMessage('コピーできる内容がありません', 'error');
+                return;
+            }
+
+            // クリップボードAPIを使用
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(output)
+                    .then(() => {
+                        showMessage('クリップボードにコピーしました！', 'success');
+                    })
+                    .catch(() => {
+                        fallbackCopy(output);
+                    });
+            } else {
+                // フォールバック方法
+                fallbackCopy(output);
+            }
+        }
+
+        /**
+         * クリップボードへのコピーのフォールバック方法
+         * @param {string} text - コピーするテキスト
+         */
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                showMessage('クリップボードにコピーしました！', 'success');
+            } catch (err) {
+                showMessage('コピーに失敗しました', 'error');
+            }
+
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+</html>
